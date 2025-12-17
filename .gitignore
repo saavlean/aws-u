@@ -1,0 +1,25 @@
+# Secrets / env
+.env
+.env.*
+*.pem
+*.key
+
+# AWS local config dumps (opcional)
+.aws-exports/
+*.tfstate
+*.tfstate.*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs / reports temporales
+*.log
+tmp/
