@@ -2,7 +2,7 @@ name: AWS Report Notification
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -10,32 +10,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: Generate AWS report
-      run: |
-        chmod +x scripts/collect_aws_info.sh
-        ./scripts/collect_aws_info.sh
+      # 🔐 CONFIGURAR CREDENCIALES AWS (ESTO FALTABA)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-    - name: Find latest report
-      id: report
-      run: |
-        FILE=$(ls reports/aws_report_*.md | tail -n 1)
-        echo "file=$FILE" >> $GITHUB_OUTPUT
+      - name: Generate AWS report
+        run: |
+          chmod +x scripts/collect_aws_info.sh
+          ./scripts/collect_aws_info.sh
 
-    - name: Send email
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.MAIL_USERNAME }}
-        password: ${{ secrets.MAIL_PASSWORD }}
-        subject: "AWS Report generado automáticamente"
-        body: |
-          El reporte AWS fue generado correctamente.
-          Archivo adjunto.
-        to: saavlean@gmail.com
-        from: "AWS Automation <saavlean@gmail.com>"
-        attachments: ${{ steps.report.outputs.file }}
+      - name: Find latest report
+        id: report
+        run: |
+          FILE=$(ls reports/aws_report_*.md | tail -n 1)
+          echo "file=$FILE" >> $GITHUB_OUTPUT
+
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "AWS Report generado automáticamente"
+          body: |
+            El reporte AWS fue generado correctamente.
+
+            Archivo adjunto:
+            ${{ steps.report.outputs.file }}
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_FROM }}
+          attachments: ${{ steps.report.outputs.file }}
+
+
+
+
+  
 
