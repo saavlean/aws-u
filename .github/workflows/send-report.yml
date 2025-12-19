@@ -2,7 +2,7 @@ name: AWS Report Notification
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -13,13 +13,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 🔐 CONFIGURAR CREDENCIALES AWS (ESTO FALTABA)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws-region: us-west-2
 
       - name: Generate AWS report
         run: |
@@ -29,7 +28,7 @@ jobs:
       - name: Find latest report
         id: report
         run: |
-          FILE=$(ls reports/aws_report_*.md | tail -n 1)
+          FILE=$(ls reports/aws-report-*.md | tail -n 1)
           echo "file=$FILE" >> $GITHUB_OUTPUT
 
       - name: Send email
@@ -48,7 +47,6 @@ jobs:
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_FROM }}
           attachments: ${{ steps.report.outputs.file }}
-
 
 
 
